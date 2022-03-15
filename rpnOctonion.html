@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Octonion RPN Calculator</title>
+		<meta name="author" content="John Wayland Bales" >
+		<meta name="description" content="A javascript RPN calculator for multiplying octonions" >
+		<meta name="keywords" content="octonion, octonions, octonion calculator, octonion multiplication,
+		Cayley-Dickson, quaternions, quaternion calculator, javascript calculator, Reverse Polish calculator, 
+		Moufang identities" >
+		<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1" >
+		<meta http-equiv="Content-Script-Type" content="text/javascript" >
+		<meta http-equiv="Content-Style-Type" content="text/css" >
+		<link rel="stylesheet" type="text/css" href="calcstyle.css" />
+    	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=default"></script>
+		<script type = "text/javascript" src="function-script.js"></script>
+<!--Copyright (C) 2009  John Wayland Bales
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
+
+</head>
+
+<body marginwidth="100px" onload="function-script">
+<center>
+<p><h1>The Octonion RPN Calculator </h1></p>
+<p><h3><img src="gplv3-127x51.png"> Software &copy; (2009) John Wayland Bales under the <a href="http://www.gnu.org/licenses/">GNU General Public License</a></h3></p>
+</center>
+<hr/>
+<form name="calculator">
+<center>
+<table border="4" cellspacing="5" cellpadding="2" bordercolor="steelblue">
+<tr><th colspan="4" align="center" bgcolor="powderblue">(a,b)&times;(c,d)=(ac-db*,a*d+cb)
+</th>
+<th colspan="4" align="center" bgcolor="powderblue">
+<select id="randMode">
+	<option value=1>Continous</option>
+	<option value=0>Discrete</option>
+</select>
+</th>
+<th colspan="4" align="center" bgcolor="powderblue">
+<INPUT TYPE="button" NAME="RandFill"  VALUE="Random" OnClick="randFill(this.form)">
+</th>
+</tr>
+<tr height="1"><td colspan="12" bgcolor="steelblue"></td></tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x0" Size="18" Maxlength="0" value="0"></td>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y0" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z0" Size="18" Maxlength="20" value="0">e<sub>0</sub></th>
+</tr>
+<tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x1" Size="18" Maxlength="0" value="0"></td>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y1" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z1" Size="18" Maxlength="20" value="0">e<sub>1</sub></th>
+</tr>
+<tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x2" Size="18" Maxlength="0" value="0"></td>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y2" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z2" Size="18" Maxlength="20" value="0">e<sub>2</sub></th>
+</tr>
+<tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x3" Size="18" Maxlength="0" value="0"></td>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y3" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z3" Size="18" Maxlength="20" value="0">e<sub>3</sub></th>
+</tr>
+<tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x4" Size="18" Maxlength="0" value="0"></td>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y4" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z4" Size="18" Maxlength="20" value="0">e<sub>4</sub></th>
+</tr>
+<tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x5" Size="18" Maxlength="0" value="0"></td>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y5" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z5" Size="18" Maxlength="20" value="0">e<sub>5</sub></th>
+</tr>
+<tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x6" Size="18" Maxlength="0" value="0"></td>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y6" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z6" Size="18" Maxlength="20" value="0">e<sub>6</sub></th>
+</tr>
+<tr>
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="x7" Size="18" Maxlength="0" value="0"></td>
+
+<td colspan="4" bgcolor="lightgray"> <INPUT TYPE="text"   NAME="y7" Size="18" Maxlength="0" value="0"></td>
+<th colspan="4" bgcolor="darkcyan" > <INPUT TYPE="text"   NAME="z7" Size="18" Maxlength="20" value="0">e<sub>7</sub></th>
+</tr>
+<tr height="1"><td colspan="12" bgcolor="steelblue"></td></tr>
+<tr>
+<td align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Plus"  VALUE="+" OnClick="plus(this.form)"></td>
+<td align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Multiply"  VALUE="&times;" OnClick="multiply(this.form)"></td>
+<td colspan="1" align="center" bgcolor="darkslategray">
+ <select id="stoReg">
+  <option value="0">X</option>
+  <option value="1">Y</option>
+  <option value="2">Z</option>
+  <option value="3">A</option>
+  <option value="4">B</option>
+  <option value="5">C</option>
+  <option value="6">D</option>
+  <option value="7">E</option>
+  <option value="8">F</option>
+  <option value="9">G</option>
+ </select>
+</td>
+<td align="center" bgcolor="darkslategray"><INPUT TYPE="button" NAME="Store"  VALUE="sto" OnClick="store(this.form)"></td>
+<td align="center" ><INPUT TYPE="button" NAME="Duplicate"  VALUE="dup" OnClick="dup(this.form)"></td>
+<td align="center" ><INPUT TYPE="button" NAME="Drop"  VALUE="drop" OnClick="drop(this.form)"></td>
+<td align="center" ><INPUT TYPE="button" NAME="Enter"  VALUE="enter" OnClick="enter(this.form)"></td>
+<td align="center" colspan="3" >&hearts;&hearts;&hearts;</td>
+<td align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Norm"  VALUE="|X|" OnClick="norm(this.form)"></td>
+<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Conjugate"  VALUE="X*" OnClick="conjugate(this.form)"></td>
+</tr>
+<tr>
+<td align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Minus"  VALUE="&ndash;" OnClick="minus(this.form)"></td>
+<td align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Divide"  VALUE="&divide;" OnClick="divide(this.form)"></td>
+<td colspan="1" align="center" bgcolor="darkslategray">
+ <select id="rclReg">
+  <option value="0">X</option>
+  <option value="1">Y</option>
+  <option value="2">Z</option>
+  <option value="3">A</option>
+  <option value="4">B</option>
+  <option value="5">C</option>
+  <option value="6">D</option>
+  <option value="7">E</option>
+  <option value="8">F</option>
+  <option value="9">G</option>
+ </select>
+</td>
+<td align="center" bgcolor="darkslategray"><INPUT TYPE="button" NAME="Recall"  VALUE="rcl" OnClick="recall(this.form)"></td>
+<td align="center" ><INPUT TYPE="button" NAME="Rotate"  VALUE="rot" OnClick="rotate(this.form)"></td>
+<td align="center" ><INPUT TYPE="button" NAME="Swap"  VALUE="swap" OnClick="swap(this.form)"></td>
+<td align="center" ><INPUT TYPE="button" NAME="Pop"  VALUE="pop" OnClick="pop(this.form)"></td>
+<td align="center" colspan="3" bgcolor="blue"><INPUT TYPE="button" NAME="ExpX"  VALUE="Exp(X)" OnClick="expX(this.form)"></td>
+<td align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Normalize"  VALUE="X/|X|" OnClick="unitize(this.form)"></td>
+<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Inverse"  VALUE="1/X" OnClick="inverse(this.form)"></td>
+</tr>
+</table>
+</center>
+</form>
+<hr/>
+
+
+<h4>Calculator Description</h4>
+<p>This is a postfix calculator with a depth 2 stack. To compute R + S&times;T, for example: R [enter] S [enter] T [times] [plus]</p>
+<p>There are ten storage/retrieval registers, X, Y, Z, A, B, C, D, E, F, G accessed by the dropdown icon.</p>
+<p>There are various standard register operations, with [push] replaced with [enter].</p>
+<p>Numbers may be entered into the main register by hand, or by using the random number generator.</p>
+<h4>Definition of basis elements</h4>
+<p> \(e_0=(1,0)=1\)</p>
+<p> \(e_1=(0,1)=i\)</p>
+<p> \(e_2=(e_1,0)=j\)</p>
+<p> \(e_3=(0,e_1)=k\)</p>
+<p> \(e_4=(e_2,0)\)</p>
+<p> \(e_5=(0,e_2)\)</p>
+<p> \(e_6=(e_3,0)\)</p>
+<p> \(e_7=(0,e_3)\)</p>
+<p>Furthermore, for \(k\gt0\), the conjugate of \(e_k\), is \(e_k^*=-e_k\). But \(e_0^*=e_0\).</p>
+
+
+<h4>Multiplication Table</h4>
+<div>
+
+<table cellspacing="15">
+<tbody>
+<tr>
+<td align="right" cellspacing="2">&nbsp;e<sub>0</sub></td>
+<td align="right">&nbsp;e<sub>1</sub></td>
+<td align="right">&nbsp;e<sub>2</sub></td>
+<td align="right">&nbsp;e<sub>3</sub></td>
+<td align="right">&nbsp;e<sub>4</sub></td>
+<td align="right">&nbsp;e<sub>5</sub></td>
+<td align="right">&nbsp;e<sub>6</sub></td>
+<td align="right">&nbsp;e<sub>7</sub></td>
+</tr>
+<tr><td align="right">&nbsp;e<sub>1</sub></td>
+<td align="right" >&#8211;e<sub>0</sub></td>
+<td align="right">&nbsp;e<sub>3</sub></td>
+<td align="right" >&#8211;e<sub>2</sub></td>
+<td align="right">&nbsp;e<sub>5</sub></td>
+<td align="right" >&#8211;e<sub>4</sub></td>
+<td align="right">&nbsp;e<sub>7</sub></td>
+<td align="right" >&#8211;e<sub>6</sub></td>
+</tr>
+<tr><td align="right">&nbsp;e<sub>2</sub></td>
+<td align="right" >&#8211;e<sub>3</sub></td>
+<td align="right" >&#8211;e<sub>0</sub></td>
+<td align="right">&nbsp;e<sub>1</sub></td>
+<td align="right">&nbsp;e<sub>6</sub></td>
+<td align="right" >&#8211;e<sub>7</sub></td>
+<td align="right" >&#8211;e<sub>4</sub></td>
+<td align="right">&nbsp;e<sub>5</sub></td>
+</tr>
+<tr><td align="right">&nbsp;e<sub>3</sub></td>
+<td align="right">&nbsp;e<sub>2</sub></td>
+<td align="right" >&#8211;e<sub>1</sub></td>
+<td align="right" >&#8211;e<sub>0</sub></td>
+<td align="right" >&#8211;e<sub>7</sub></td>
+<td align="right" >&#8211;e<sub>6</sub></td>
+<td align="right">&nbsp;e<sub>5</sub></td>
+<td align="right">&nbsp;e<sub>4</sub></td>
+</tr>
+<tr><td align="right">&nbsp;e<sub>4</sub></td>
+<td align="right" >&#8211;e<sub>5</sub></td>
+<td align="right" >&#8211;e<sub>6</sub></td>
+<td align="right">&nbsp;e<sub>7</sub></td>
+<td align="right" >&#8211;e<sub>0</sub></td>
+<td align="right">&nbsp;e<sub>1</sub></td>
+<td align="right">&nbsp;e<sub>2</sub></td>
+<td align="right" >&#8211;e<sub>3</sub></td>
+</tr>
+<tr><td align="right">&nbsp;e<sub>5</sub></td>
+<td align="right">&nbsp;e<sub>4</sub></td>
+<td align="right">&nbsp;e<sub>7</sub></td>
+<td align="right">&nbsp;e<sub>6</sub></td>
+<td align="right" >&#8211;e<sub>1</sub></td>
+<td align="right" >&#8211;e<sub>0</sub></td>
+<td align="right" >&#8211;e<sub>3</sub></td>
+<td align="right" >&#8211;e<sub>2</sub></td>
+</tr>
+<tr><td align="right">&nbsp;e<sub>6</sub></td>
+<td align="right" >&#8211;e<sub>7</sub></td>
+<td align="right">&nbsp;e<sub>4</sub></td>
+<td align="right" >&#8211;e<sub>5</sub></td>
+<td align="right" >&#8211;e<sub>2</sub></td>
+<td align="right">&nbsp;e<sub>3</sub></td>
+<td align="right" >&#8211;e<sub>0</sub></td>
+<td align="right">&nbsp;e<sub>1</sub></td>
+</tr>
+<tr><td align="right">&nbsp;e<sub>7</sub></td>
+<td align="right">&nbsp;e<sub>6</sub></td>
+<td align="right" >&#8211;e<sub>5</sub></td>
+<td align="right" >&#8211;e<sub>4</sub></td>
+<td align="right">&nbsp;e<sub>3</sub></td>
+<td align="right">&nbsp;e<sub>2</sub></td>
+<td align="right" >&#8211;e<sub>1</sub></td>
+<td align="right" >&#8211;e<sub>0</sub></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>I realize that the js function for determining the Cayley-Dickson twist is massive overkill for this application. It is designed to calculate Cayley-Dickson twist for \(\mathbb{A}_N\) for any \(N\), not just \(N=3\).</p>
+<h4>A worked example of use</h4>
+<p>To illustrate one of the Moufang identities, for example Z(X(ZY))&nbsp;=&nbsp;((ZX)Z)Y, perform the following operations:
+<ol>
+	<li> Select random vectors X, Y and Z </li>
+	<ol>
+		<li> RANDOM X STO </li>
+		<li> RANDOM Y STO </li>
+		<li> RANDOM Z STO </li>
+	</ol>
+	<li> Perform the operations on the left side of the identity </li>
+		<ol>
+			<li> Z RCL ENTER (Since Z should already be in the register, you don't actually have to recall it.)</li>
+			<li> Y RCL &times; ENTER </li>
+			<li> X RCL SWAP &times; ENTER </li>
+			<li> Z RCL SWAP &times; </li>
+		</ol>
+	<li> Store the result </li>
+		<ol>
+			<li> A STO </li>
+		</ol>
+	<li> Perform the operations on the right side of the identity </li>
+		<ol>
+			<li> Z RCL ENTER </li>
+			<li> X RCL &times; ENTER </li>
+			<li> Z RCL &times; ENTER </li>
+			<li> Y RCL &times; ENTER </li>
+		</ol>
+	<li> Subtract the result obtained on the left side of the identity. Result should be 0 (allowing for small errors). </li>
+		<ol>
+			<li> A RCL &ndash; </li>
+		</ol>
+</ol>
+
+<div>
+<p><a href="mailto:john.w.bales@gmail.com?subject=Your%20Octonion%20Calculator">John Wayland Bales</a>, Department of Mathematics (Retired), Tuskegee University, Tuskegee, AL 36088 USA</p>
+</div>
+
+</body>
+
+</html>
+
+
