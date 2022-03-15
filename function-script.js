@@ -1,16 +1,6 @@
 
-var Mem0;
-var Mem1;
-var Mem2;
-var Mem3;
-var Mem4;
-var Mem5;
-var Mem6;
-var Mem7;
-var Mem8;
-var Mem9;
 for (let i=0;i<10;i++){
-	("Mem"+i+"=[]");
+	eval("Mem"+i+"=[]");
 	for (let j=0;j<8;j++){
 		eval("Mem"+i+"["+j+"]=0");
 	}
@@ -86,7 +76,27 @@ function randFill(form){
 	if (r==0){
 		for (let  i = 0; i < limit; i++){
 			z[i] = Math.round(2*Math.random()-1);
-			eval("form['z"+i+"'].value=z[i]");
+			eval("form['z"+i+"'].value=z[i]");var Mem0;
+3
+var Mem1;
+4
+var Mem2;
+5
+var Mem3;
+6
+var Mem4;
+7
+var Mem5;
+8
+var Mem6;
+9
+var Mem7;
+10
+var Mem8;
+11
+var Mem9;
+12
+
 		}
 		return;
 	}
