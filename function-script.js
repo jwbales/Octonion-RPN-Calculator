@@ -148,7 +148,7 @@ function divide(form){
 	}
 	for (let  i = 0; i < limit; i++){
 		p[i]=p[i]/z2;
-		p[i]=(1e-15)*Math.round(1e15*p[i]);
+		p[i]=(1e-14)*Math.round(1e14*p[i]);
 		eval("form['y"+i+"'].value=form['x"+i+"'].value");
 		eval("form['z"+i+"'].value=p[i]");
 	}
@@ -187,7 +187,7 @@ function multiply(form){
 		}
 	}
 	for (let  i = 0; i < limit; i++){
-		p[i]=(1e-15)*Math.round(1e15*p[i]);
+		p[i]=(1e-14)*Math.round(1e14*p[i]);
 		eval("form['y"+i+"'].value=form['x"+i+"'].value");
 		eval("form['z"+i+"'].value=p[i]");
 	}
