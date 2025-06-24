@@ -1,0 +1,1163 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+	<title>Octonion RPN Calculator</title>
+	<meta name="author" content="John Wayland Bales" >
+	<meta name="description" content="A javascript RPN calculator for octonions">
+	<meta http-equiv="Content-Script-Type" content="text/javascript">
+	<meta http-equiv="Content-Style-Type" content="text/css">
+
+	<style>
+	.dropdown {
+	  position: relative;
+	  display: inline-block;
+	}
+
+	.dropdown-content {
+	  display: none;
+	  position: absolute;
+	  background-color: #f9f9f9;
+	  min-width: 675px;
+	  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+	  padding: 12px 16px;
+	  z-index: 1;
+	}
+
+	.dropdown:hover .dropdown-content {
+	  display: block;
+	}
+	</style>
+
+
+    <style>
+        g#fp_nodes     > g > text   { fill: black; font-size: 12px; }
+        g#fp_nodes     > g > circle { fill: white; stroke: black; }
+
+        g#fp_bisectors > g > path   { fill: none;  stroke: black; }
+        g#fp_perimeter > g > path   { fill: none;  stroke: black; }
+        g#fp_ring      > g > path   { fill: none;  stroke: black; }
+        g#fp_bisectors > g > text > textPath { fill: black; font-size: 12px; dominant-baseline: central; }
+        g#fp_perimeter > g > text > textPath { fill: black; font-size: 12px; dominant-baseline: central; }
+        g#fp_ring      > g > text > textPath { fill: black; font-size: 12px; dominant-baseline: central; }
+    </style>
+</head>
+
+<body marginwidth="100px">
+
+
+	<p>
+	<h1>The Octonion RPN Calculator </h1>
+	</p>
+ 
+	<p>CAUTION: You must RE-INITIALIZE the calculator after changing any of the default settings in the top row.</p>
+
+	<form name="calculator">
+
+				<table border="4" cellspacing="5" bordercolor="blue" width="40%">
+				<tr bgcolor="white">
+					<td colspan="1" bgcolor="black" align="left"><INPUT type = "button" name="button" 
+						                    value="Re-initialize" onClick="main()"></td>
+					<td colspan="1">C=
+						<select id="T8">
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+						</select>
+					</td>
+					<td colspan="1" align = "right">Triads:</td>
+										<!--COMMENT
+						Following are the seven default triads which appear each time the calculator
+						is loaded. They may be replaced with any other valid octonion triad set. Just
+						edit the numbers following the 'value=' statements.
+					-->
+					<td colspan="1" bgcolor="lightblue" align="center"> <INPUT TYPE="text" style="text-align:center;" ID="T1" Size="1"
+											Maxlength="3" value="123"></INPUT></td>
+					<td colspan="1" bgcolor="lightblue" align="center"> <INPUT TYPE="text" style="text-align:center;" ID="T2" Size="1"
+											Maxlength="3" value="145"></INPUT></td>
+					<td colspan="1" bgcolor="lightblue" align="center"> <INPUT TYPE="text" style="text-align:center;" ID="T3" Size="1"
+											Maxlength="3" value="176"></INPUT></td>
+					<td colspan="1" bgcolor="lightblue" align="center"> <INPUT TYPE="text" style="text-align:center;" ID="T4" Size="1"
+											Maxlength="3" value="246"></INPUT></td>
+					<td colspan="1" bgcolor="lightblue" align="center"> <INPUT TYPE="text" style="text-align:center;" ID="T5" Size="1"
+											Maxlength="3" value="257"></INPUT></td>
+					<td colspan="1" bgcolor="lightblue" align="center"> <INPUT TYPE="text" style="text-align:center;" ID="T6" Size="1"
+											Maxlength="3" value="365"></INPUT></td>
+					<td colspan="1" bgcolor="lightblue" align="center"> <INPUT TYPE="text" style="text-align:center;" ID="T7" Size="1"
+											Maxlength="3" value="347"></INPUT></td>
+				<tr>
+					<td colspan="3" align="center" style="width:33%">Octonion RPN Calculator</td>
+					<td colspan="3" align="center" style="width:33%">
+						<select id="randMode">
+							<option value=0>Random integer entry [-9,9]</option>
+							<option value=1>Random real entry (-1,1)</option>
+						</select>
+					</td>
+					<td colspan="4" align="center" bgcolor="blue" style="width:33%">
+						<INPUT TYPE="button" NAME="RandFill" VALUE="Random Input" OnClick="randFill(this.form)">
+					</td>
+				</tr>
+				<tr>
+					<td colspan="3"  align="center" style="width:33%">Register 2</td>
+					<td colspan="3"  align="center" style="width:33%">Register 1</td>
+					<td colspan="4"  align="center" style="width:34%">Top Register</td>
+				</tr>
+				<tr height="1">
+					<td colspan="3" bgcolor="lightgray" style="width:33%"> <INPUT TYPE="text" ID="x0" Size="21"
+							Maxlength="0" value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray" style="width:33%"> <INPUT TYPE="text" ID="y0" Size="21"
+							Maxlength="0" value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue" style="width:34%"> <INPUT TYPE="text" ID="z0" Size="21"
+							Maxlength="16" value="0">e<sub>0</sub></td>
+				</tr>
+				<tr>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="x1" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="y1" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue"> <INPUT TYPE="text" ID="z1" Size="21" Maxlength="16"
+							value="0">e<sub>1</sub></INPUT></td>
+				</tr>
+				<tr>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="x2" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="y2" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue"> <INPUT TYPE="text" ID="z2" Size="21" Maxlength="16"
+							value="0">e<sub>2</sub></INPUT></td>
+				</tr>
+				<tr>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="x3" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="y3" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue"> <INPUT TYPE="text" ID="z3" Size="21" Maxlength="16"
+							value="0">e<sub>3</sub></INPUT></td>
+				</tr>
+				<tr>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="x4" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="y4" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue"> <INPUT TYPE="text" ID="z4" Size="21" Maxlength="16"
+							value="0">e<sub>4</sub></INPUT></td>
+				</tr>
+				<tr>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="x5" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="y5" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue"> <INPUT TYPE="text" ID="z5" Size="21" Maxlength="16"
+							value="0">e<sub>5</sub></INPUT></td>
+				</tr>
+				<tr>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="x6" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="y6" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue"> <INPUT TYPE="text" ID="z6" Size="21" Maxlength="16"
+							value="0">e<sub>6</sub></INPUT></td>
+				</tr>
+				<tr>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="x7" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="3" bgcolor="lightgray"> <INPUT TYPE="text" ID="y7" Size="21" Maxlength="0"
+							value="0"></INPUT></td>
+					<td colspan="4" bgcolor="lightblue"> <INPUT TYPE="text" ID="z7" Size="21" Maxlength="16"
+							value="0">e<sub>7</sub></INPUT></td>
+				</tr>
+				<tr>
+				<td colspan="1" align="center" bgcolor="lightblue"><INPUT TYPE="button" NAME="Norm" VALUE="|X|" 
+						OnClick="norm(this.form)"></td>
+				<td colspan="1" align="center" bgcolor="lightblue"><INPUT TYPE="button" NAME="Conjugate" VALUE="X*"
+						OnClick="conjugate(this.form)"></td>
+				<td colspan="1" align="center" bgcolor="lightblue"><INPUT TYPE="button" NAME="Inverse" VALUE="1/X"
+						OnClick="inverse(this.form)"></td>
+				<td colspan="1" align="center" bgcolor="lightgreen"><INPUT TYPE="button" NAME="Plus" VALUE="+" style = "font-size: 24px;"
+						OnClick="plus(this.form)"></td>
+				<td colspan="1" align="center" bgcolor="lightgreen"><INPUT TYPE="button" NAME="Multiply" VALUE="&times;" style = "font-size: 24px;"
+						OnClick="multiply(this.form)"></td>
+				<!-- <td colspan="1"></td> -->
+				<td colspan="2" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Store" VALUE="sto"
+						OnClick="store(this.form)">
+					<select id="stoReg">
+						<option value="0">&nbsp;X</option>
+						<option value="1">Y</option>
+						<option value="2">Z</option>
+						<option value="3">A</option>
+						<option value="4">B</option>
+						<option value="5">C</option>
+						<option value="6">D</option>
+						<option value="7">E</option>
+						<option value="8">F</option>
+						<option value="9">G</option>
+						<option value="10">H</option>
+						<option value="11">I</option>
+						<option value="12">J</option>
+						<option value="13">K</option>
+						<option value="14">L</option>
+						<option value="15">M</option>
+					</select>
+				</td>
+				<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Duplicate" VALUE="dup"
+						OnClick="dup(this.form)"></td>
+				<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Drop" VALUE="drop"
+						OnClick="drop(this.form)"></td>
+				<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Enter" VALUE="enter"
+						OnClick="enter(this.form)"></td>
+				</tr>
+
+				<tr>
+				<td colspan="1" align="center" bgcolor="lightblue"><INPUT TYPE="button" NAME="Commutator" VALUE = "[X,Y]" OnClick="commutate(this.form)">
+		
+ 				<td colspan="1" align="center" bgcolor="lightblue"><INPUT TYPE="button" NAME="ExpX" VALUE="Exp(X)"
+							OnClick="expX(this.form)"></td>
+					<td colspan="1" align="center" bgcolor="lightblue"><INPUT TYPE="button" NAME="Normalize"
+							VALUE="X/|X|" OnClick="unitize(this.form)"></td>
+					<td colspan="1" align="center" bgcolor="lightgreen"><INPUT TYPE="button" NAME="Minus" VALUE="&ndash;" style = "font-size: 24px;"
+							OnClick="minus(this.form)"></td>
+					<td colspan="1" align="center" bgcolor="lightgreen"><INPUT TYPE="button" NAME="Divide"
+							VALUE="&divide;" style = "font-size: 24px;"
+							OnClick="divide(this.form)"></td>
+					<td colspan="2" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Recall" VALUE="rcl"
+							OnClick="recall(this.form)">
+						<select id="rclReg">
+							<option value="0">X</option>
+							<option value="1">Y</option>
+							<option value="2">Z</option>
+							<option value="3">A</option>
+							<option value="4">B</option>
+							<option value="5">C</option>
+							<option value="6">D</option>
+							<option value="7">E</option>
+							<option value="8">F</option>
+							<option value="9">G</option>
+							<option value="10">H</option>
+							<option value="11">I</option>
+							<option value="12">J</option>
+							<option value="13">K</option>
+							<option value="14">L</option>
+							<option value="15">M</option>
+						</select>
+					</td>
+					<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Rotate" VALUE="rot"
+							OnClick="rotate(this.form)"></td>
+					<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Swap" VALUE="swap"
+							OnClick="swap(this.form)"></td>
+					<td colspan="1" align="center" bgcolor="blue"><INPUT TYPE="button" NAME="Pop" VALUE="pop"
+							OnClick="pop(this.form)"></td>
+				</tr>
+
+			</table>
+	</form>
+	<hr />
+
+<div>
+<p>
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="1.1"
+    height="205"
+    width="240"
+    id="fano_plane_SVG"
+>
+    <g id="fano_plane" transform="translate(-85,-110)">
+        <g id="fp_ring">
+            <g><path id="pBC" d="M 150 213   A 57.5 57.5 0 0 1 250 213" /><text id="tBC" rotate="0"><textPath href="#pBC" startOffset="30%">➤</textPath></text></g>
+            <g><path id="pCF" d="M 250 213   A 57.5 57.5 0 0 1 200 300" /><text id="tCF" rotate="0"><textPath href="#pCF" startOffset="30%">➤</textPath></text></g>
+            <g><path id="pBF" d="M 200 300   A 57.5 57.5 0 0 1 150 213" /><text id="tBF" rotate="0"><textPath href="#pBF" startOffset="30%">➤</textPath></text></g>
+        </g>
+        <g id="fp_perimeter">
+            <g><path id="pAE" d="M 100 300                   L 200 127" /><text id="tAE" rotate="0"><textPath href="#pAE" startOffset="25%">➤</textPath><textPath href="#pAE" startOffset="70%">➤</textPath></text></g>
+            <g><path id="pAG" d="M 200 127                   L 300 300" /><text id="tAG" rotate="0"><textPath href="#pAG" startOffset="25%">➤</textPath><textPath href="#pAG" startOffset="70%">➤</textPath></text></g>
+            <g><path id="pEG" d="M 300 300                   L 100 300" /><text id="tEG" rotate="0"><textPath href="#pEG" startOffset="25%">➤</textPath><textPath href="#pEG" startOffset="70%">➤</textPath></text></g>
+        </g>
+        <g id="fp_bisectors">
+            <g><path id="pBG" d="M 150 213                   L 300 300" /><text id="tBG" rotate="0"><textPath href="#pBG" startOffset="44%">➤</textPath><textPath href="#pBG" startOffset="75%">➤</textPath></text></g>
+            <g><path id="pCE" d="M 250 213                   L 100 300" /><text id="tCE" rotate="0"><textPath href="#pCE" startOffset="44%">➤</textPath><textPath href="#pCE" startOffset="75%">➤</textPath></text></g>
+            <g><path id="pAF" d="M 200 300                   L 200 127" /><text id="tAF" rotate="0"><textPath href="#pAF" startOffset="44%">➤</textPath><textPath href="#pAF" startOffset="75%">➤</textPath></text></g>
+        </g>
+        <!-- Nodes must be drawn last to overlay the edge lines beneath them. -->
+        <g id="fp_nodes">
+            <g transform="translate(200,127)"><circle r="13" /><text id="nodeA" x="-3" y="3">-</text></g>
+            <g transform="translate(150,213)"><circle r="13" /><text id="nodeB" x="-3" y="3">-</text></g>
+            <g transform="translate(250,213)"><circle r="13" /><text id="nodeC" x="-3" y="3">-</text></g>
+            <g transform="translate(200,242)"><circle r="13" /><text id="nodeD" x="-3" y="3">-</text></g>
+            <g transform="translate(100,300)"><circle r="13" /><text id="nodeE" x="-3" y="3">-</text></g>
+            <g transform="translate(200,300)"><circle r="13" /><text id="nodeF" x="-3" y="3">-</text></g>
+            <g transform="translate(300,300)"><circle r="13" /><text id="nodeG" x="-3" y="3">-</text></g>
+        </g>
+    </g>
+</svg>
+<p> Fano Plane Code compliments of Bruce Gray at <a href="https://github.com/Util">https://github.com/Util</a>
+</p>
+</div>
+
+<font size="6" face="Helvetica" >
+<table>
+<tr align="right" bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T00" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T01" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T02" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T03" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T04" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T05" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T06" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T07" ></td>
+</tr>
+<tr align="right" bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T10" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T11" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T12" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T13" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T14" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T15" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T16" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T17" ></td>
+</tr>
+<tr align="right" bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T20" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T21" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T22" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T23" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T24" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T25" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T26" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T27" ></td>
+</tr>
+<tr align="right" bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T30" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T31" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T32" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T33" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T34" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T35" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T36" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T37" ></td>
+</tr>
+<tr align="right" bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T40" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T41" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T42" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T43" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T44" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T45" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T46" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T47" ></td>
+</tr>
+<tr align="right"bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T50" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T51" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T52" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T53" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T54" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T55" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T56" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T57" ></td>
+</tr>
+<tr align="right" bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T60" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T61" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T62" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T63" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T64" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T65" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T66" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T67" ></td>
+</tr>
+<tr align="right" bgcolor="lightblue">
+	<td colspan="1" bgcolor="lightblue" ID="T70" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T71" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T72" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T73" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T74" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T75" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T76" ></td>
+	<td colspan="1" bgcolor="lightblue" ID="T77" ></td>
+</tr>
+</table>
+</font>
+
+	<hr />
+
+<hr/>
+<p>Please contact me if you locate a bug. Include instructions on how to reproduce the error.</p>
+<p>Contact:<a href="mailto:john.w.bales@gmail.com?subject=Your online octonion calculator">John Wayland Bales</a>,
+	Department of Mathematics (Retired), Tuskegee University, Tuskegee, AL 36088 USA
+
+<script language="JavaScript">
+
+const limit = 8;
+let a = [];//individual elements of the seven triads abc
+let b = [];
+let c = [];
+let prod = [];//elements of the product table
+let sub = new Array(64);//Subscripts of basis vectors
+let sgn = [];//elements of the twist (sign) table
+let leftTriple  = 0;
+let rightTriple = 0;
+let ultraSet = [];//for each triad abc, this set also contains bca & cab
+let ultraSetRev = [];//contains the reverse cba for each element in ultraSet
+let triad = [];//the three triads containing D on Fano Plane
+let hand = "";//either 'left' or 'right' Fano plane diagram must be used
+let A = 0;//values on nodes of the Fano plane
+let B = 0;
+let C = 0;
+let D = 0;
+let E = 0;
+let F = 0;
+let G = 0;
+let centerFano;//value chosen for position D in Fano plane
+let rightSet = [];//for triads containing D, those three on the right of D
+let leftSet  = [];// those three on the left of D
+let CosX = 0;
+let SinX = 0;
+
+function main (){
+	alphabetizeFano ();
+	loadTriads ();
+	makeUltrasets ();//create sets ultraSet[] and ultraSetRev[]
+	makeFano ();
+	pqInitialize ();//initialize and fill the product tables
+	showParray ();
+}
+
+window.onload = main();
+
+function alphabetizeFano (){
+    // This function might be obsolete, now that only one Fano Plane is displayed.
+    for ( const L of "ABCDEFG".split("") ) {
+        set_fp_node_label( L, L );
+    }
+}
+
+function loadTriads (){ // Load and parse the 7 triads abc = triad[i] left to right
+	for (i = 1; i < limit; i++){
+		triad[i] = parseInt( document.getElementById( "T" + i ).value, 8 );
+		a[i]     = (triad[i]>>>6)&7;
+		b[i]     = (triad[i]>>>3)&7;
+		c[i]     = triad[i]&7;
+	}
+	centerFano   = parseInt( document.getElementById("T8").value, 8 );
+	checkSteiner();
+}
+function isIinTj(n,l){
+	let state = 0;
+	if (a[l] == n || b[l] == n || c[l] == n){
+		state = 1;
+	}
+	return state;
+}
+
+function checkSteiner (){//Each pair of numbers i,j can occur in only one of the seven triads.
+	let lineCount  = [];
+	for (let k = 1; k<22; k++){
+		lineCount[k] = 0;
+	}
+	k = 0;
+	for (i = 1; i < limit; i++){
+		for (let j = i+1; j < 8; j++ ){
+			k++;
+			for (let l = 1; l < 8; l++){
+				if ( (isIinTj(i,l) == 1) && (isIinTj(j,l) == 1) ){
+				lineCount[k]++;
+				}
+			}			
+		}
+	}
+	for (k = 1; k < 22; k++){
+		if (lineCount[k] >> 1){
+			alert("Error: This is not a Steiner triple system!\nReloading default triples");
+			window.location.reload();
+		}
+//		document.getElementById("lineCount_"  + k).innerHTML =  "lineCount("  + k + ") = " + lineCount[k];
+	}
+}
+
+
+function makeUltrasets (){ // Form all 42 possible senses & orders of the 7 triads into an ultraSet
+	for (let i = 0; i < 7; i++){
+		ultraSet   [3*i    ] = triad[i + 1];
+		ultraSetRev[3*i    ] = cba(ultraSet[3*i]);
+		ultraSet   [3*i + 1] = cab(ultraSet[3*i]);
+		ultraSetRev[3*i + 1] = cba(ultraSet[3*i + 1]);
+		ultraSet   [3*i + 2] = cab(ultraSet[3*i + 1]);
+		ultraSetRev[3*i + 2] = cba(ultraSet[3*i + 2]);
+	}
+}
+
+function cba (abc){//Rearrange order of triad abc
+	let x = (pickByte(1,abc)<<6) | (pickByte(2,abc)<<3) | pickByte(3,abc);
+	return x;
+}
+
+function cab (abc){//Rearrange order of triad abc
+	let x = (pickByte(1,abc)<<6) | (pickByte(3,abc)<<3) | pickByte(2,abc);
+	return x;
+}
+
+function pickByte(byte,string){//pick individual bytes of three byte string
+	let x = "0";
+	if (byte == 1){
+		x = string & 7;
+	}
+	if (byte == 2){
+		x = (string>>>3)&7;
+	}
+	if (byte == 3){
+		x = (string>>>6)&7;
+	}
+	return x;
+}
+
+function makeFano (){//If the triad set defines octonions, then calculate
+	//the configuration of the corresponding Fano plane
+	let m = 0;
+	let x = centerFano;
+	for (let i = 1; i < limit; i++){
+		if ( a[i] == x ){
+			m += 1;
+			rightSet[m] = b[i];
+			leftSet[m]  = c[i];
+		} else if ( b[i] == x ) {
+			m += 1;
+			rightSet[m] = c[i];
+			leftSet[m]  = a[i];
+		} else if ( c[i] == x ){
+			m += 1;
+			rightSet[m] = a[i];
+			leftSet[m]  = b[i];
+		}
+	}
+// Populate the nodes of the Fano plane while vetting the given triad set
+
+	leftTriple = (((leftSet[1]<<3) | leftSet[2])<<3) | leftSet[3];
+	rightTriple = (((rightSet[1]<<3) | rightSet[2])<<3) | rightSet[3];
+
+	let side1 = 0;
+	let side2 = 0;
+	let side3 = 0;
+	let z = 0;
+	D = x;
+
+	if (isXinY (leftTriple,ultraSet,21)){
+		hand = 'left';
+		B = leftSet[1];
+		C = leftSet[2];
+		F = leftSet[3];
+		G = rightSet[1];
+		E = rightSet[2];
+		A = rightSet[3];
+		side1 = (A<<6) | (C<<3) | G;
+		side2 = (G<<6) | (F<<3) | E;
+		side3 = (E<<6) | (B<<3) | A;
+		z = isXinY(side1,ultraSet,21)&&isXinY(side2,ultraSet,21)&&isXinY(side3,ultraSet,21);
+		if (z){
+			fillFano();
+			return;
+		}
+
+		alert ("These triads do not define octonions.\nReloading default triples");
+		window.location.reload();
+	}
+
+	if (isXinY (leftTriple,ultraSetRev,21)){
+		hand = 'left';
+		C = leftSet[1];
+		B = leftSet[2];
+		F = leftSet[3];
+		E = rightSet[1];
+		G = rightSet[2];
+		A = rightSet[3];
+		side1 = (A<<6) | (C<<3) | G;
+		side2 = (G<<6) | (F<<3) | E;
+		side3 = (E<<6) | (B<<3) | A;
+		z = isXinY(side1,ultraSet,21)&&isXinY(side2,ultraSet,21)&&isXinY(side3,ultraSet,21);
+		if (z){
+			fillFano();
+			return;
+		}
+		alert ("These triads do not define octonions.\nReloading default triples");
+		window.location.reload();
+	}
+
+	if (isXinY (rightTriple,ultraSet,21)){
+		hand = 'right';
+		B = rightSet[1];
+		C = rightSet[2];
+		F = rightSet[3];
+		G = leftSet[1];
+		E = leftSet[2];
+		A = leftSet[3];
+		side1 = (A<<6) | (C<<3) | G;
+		side2 = (G<<6) | (F<<3) | E;
+		side3 = (E<<6) | (B<<3) | A;
+		z = isXinY(side1,ultraSet,21)&&isXinY(side2,ultraSet,21)&&isXinY(side3,ultraSet,21);
+		if (z){
+			fillFano();
+			return;
+		}
+		alert ("These triads do not define octonions.\nReloading default triples");
+		window.location.reload();
+	}
+	if (isXinY (rightTriple,ultraSetRev,21)){
+		hand = 'right';
+		C = rightSet[1];
+		B = rightSet[2];
+		F = rightSet[3];
+		E = leftSet[1];
+		G = leftSet[2];
+		A = leftSet[3];
+		side1 = (A<<6) | (C<<3) | G;
+		side2 = (G<<6) | (F<<3) | E;
+		side3 = (E<<6) | (B<<3) | A;
+		z = isXinY(side1,ultraSet,21)&&isXinY(side2,ultraSet,21)&&isXinY(side3,ultraSet,21);
+		if (z){
+			fillFano();
+			return;
+		}
+		alert ("These triads do not define octonions.\nReloading default triples");
+		window.location.reload();
+	}
+}
+
+function isXinY (x,y,k){//Check whether element x is contained among the k elements of array y.
+	for (i = 0; i < k; i++){
+		if (x == y[i]){
+			return 1;
+		}
+	}
+	return 0;
+}
+
+function pqInitialize (){//Initialize display of the multiplication table
+	prod = 
+		[ "e<sub>0</sub>","e<sub>1</sub>","e<sub>2</sub>",
+		"e<sub>3</sub>","e<sub>4</sub>","e<sub>5</sub>",
+		"e<sub>6</sub>","e<sub>7</sub>",
+        "e<sub>1</sub>","-e<sub>0</sub>",-1,-1,-1,-1,-1,-1,
+        "e<sub>2</sub>",-1,"-e<sub>0</sub>",-1,-1,-1,-1,-1,
+        "e<sub>3</sub>",-1,-1,"-e<sub>0</sub>",-1,-1,-1,-1,
+        "e<sub>4</sub>",-1,-1,-1,"-e<sub>0</sub>",-1,-1,-1,
+        "e<sub>5</sub>",-1,-1,-1,-1,"-e<sub>0</sub>",-1,-1,
+        "e<sub>6</sub>",-1,-1,-1,-1,-1,"-e<sub>0</sub>",-1,
+        "e<sub>7</sub>",-1,-1,-1,-1,-1,-1,"-e<sub>0</sub>"
+      ];
+	sgn = 	[1, 1, 1, 1, 1, 1, 1, 1,//Initialize the table of signs.
+		  	 1,-1,-1,-1,-1,-1,-1,-1,
+			 1,-1,-1,-1,-1,-1,-1,-1,
+			 1,-1,-1,-1,-1,-1,-1,-1,
+			 1,-1,-1,-1,-1,-1,-1,-1,
+			 1,-1,-1,-1,-1,-1,-1,-1,
+			 1,-1,-1,-1,-1,-1,-1,-1,
+			 1,-1,-1,-1,-1,-1,-1,-1
+			];
+	sub = 	[0, 1, 2, 3, 4, 5, 6, 7,//Initialize the table of subscripts.
+		  	 1, 0,-1,-1,-1,-1,-1,-1,
+			 2,-1, 0,-1,-1,-1,-1,-1,
+			 3,-1,-1, 0,-1,-1,-1,-1,
+			 4,-1,-1,-1, 0,-1,-1,-1,
+			 5,-1,-1,-1,-1, 0,-1,-1,
+			 6,-1,-1,-1,-1,-1, 0,-1,
+			 7,-1,-1,-1,-1,-1,-1, 0
+			];
+	for (let i = 1; i < limit; i++){//Tweak the display of the multiplication table.
+		prod[8*a[i] + b[i]] = "e<sub>" + c[i] + "</sub>";
+		prod[8*b[i] + c[i]] = "e<sub>" + a[i] + "</sub>";
+		prod[8*c[i] + a[i]] = "e<sub>" + b[i] + "</sub>";
+
+		prod[8*b[i] + a[i]] = "-e<sub>" + c[i] + "</sub>";
+		prod[8*c[i] + b[i]] = "-e<sub>" + a[i] + "</sub>";
+		prod[8*a[i] + c[i]] = "-e<sub>" + b[i] + "</sub>";
+
+		sgn[8*a[i] + b[i]] = 1;//Tweak the table of signs.
+		sgn[8*b[i] + c[i]] = 1;
+		sgn[8*c[i] + a[i]] = 1;
+	}
+	for (let i = 1; i < limit; i++){
+		sub[8*a[i] + b[i]] = c[i];
+		sub[8*b[i] + c[i]] = a[i];
+		sub[8*c[i] + a[i]] = b[i];
+
+		sub[8*b[i] + a[i]] = c[i];
+		sub[8*c[i] + b[i]] = a[i];
+		sub[8*a[i] + c[i]] = b[i];
+	}
+
+}
+
+// Set the orientation and the node labels for the Fano Plane display.
+// Uses globals: hand, A, B, C, D, E, F, G;
+function fillFano () {
+
+    // Current code to produce the Fano Plane always has
+    // the perimeter and ring going clockwise, so these are constant right now.
+    const dir_perimeter = 0; 
+    const dir_ring      = 0;
+
+    // Translate the old "hand" value into the new Direction value for the bisectors.
+    // (from back when there were two fixed Fano Planes displayed side-by-side; the left FP was base-to-vertex, and the right FP was vertex-to-base), 
+    // XXX Temporary adapter - will be obsolete after makeFano() populates some boolean variable to indicate bisector direction.
+    const dir_bisectors
+        = (hand == "left" ) ? 0
+        : (hand == "right") ? 1
+        :                     null;
+    if (dir_bisectors === null) throw `hand was "${hand}", but needs to be "left" or "right"`;
+
+    // The seven nodes of the Fano plane will be the digits "1" through "7",
+    // which are contained in the seven global variables A through G.
+    const labels = [A, B, C, D, E, F, G];
+
+    set_fano_plane( dir_bisectors, dir_perimeter, dir_ring, labels );
+}
+function set_fp_node_label ( node_letter, label ) {
+    const id = "node" + node_letter;
+    document.getElementById(id).textContent = label;
+}
+function set_fp_edge_direction ( edge, flipped ) {
+    // "Natural" directions when `flipped` is false: bisectors are base-to-vertex, ring and perimeter are clockwise.
+    // "Reverse" directions when `flipped` is true : bisectors are vertex-to-base, ring and perimeter are counter-clockwise.
+    const id = "t" + edge;
+    const degrees  = flipped ? 180 : 0;
+    document.getElementById(id).setAttribute("rotate", degrees);
+}
+function set_fano_plane ( dir_bisectors, dir_perimeter, dir_ring, node_labels ) {
+    set_fp_edge_direction( "BC", dir_ring      );
+    set_fp_edge_direction( "CF", dir_ring      );
+    set_fp_edge_direction( "BF", dir_ring      );
+    set_fp_edge_direction( "AE", dir_perimeter );
+    set_fp_edge_direction( "AG", dir_perimeter );
+    set_fp_edge_direction( "EG", dir_perimeter );
+    set_fp_edge_direction( "BG", dir_bisectors );
+    set_fp_edge_direction( "CE", dir_bisectors );
+    set_fp_edge_direction( "AF", dir_bisectors );
+
+    set_fp_node_label( "A", node_labels[0] );
+    set_fp_node_label( "B", node_labels[1] );
+    set_fp_node_label( "C", node_labels[2] );
+    set_fp_node_label( "D", node_labels[3] );
+    set_fp_node_label( "E", node_labels[4] );
+    set_fp_node_label( "F", node_labels[5] );
+    set_fp_node_label( "G", node_labels[6] );
+}
+
+function showParray (){//display the product array
+	for (row = 0; row < 8; row++){
+		for (column = 0; column < 8; column++){
+			let k = row * 8 + column;
+			let l = prod[k];
+			document.getElementById("T" + row + column ).innerHTML = "&nbsp;" + l + "&nbsp";
+		}
+	}
+}
+
+function popopen(url){
+	newwindow=window.open(url,'name','height=600,width=1000,resizable=yes,scrollbars=yes,status=yes');
+	if (window.focus) {newwindow.focus()}
+}
+
+
+			for (let i = 0; i < limit; i++) {
+				eval("Mem" + i + "=[]");
+				for (let j = 0; j < limit; j++) {
+					eval("Mem" + i + "[" + j + "]=0");
+				}
+			}
+
+			function store(form) {
+				for (let i = 0; i < limit; i++) {
+					let N = form.stoReg.value;
+					eval("Mem" + N + "[i]=form['z" + i + "'].value");
+				}
+				return;
+			}
+			function recall(form) {
+				for (let i = 0; i < limit; i++) {
+					let N = form.rclReg.value;
+					eval("form['z" + i + "'].value=Mem" + N + "[i]");
+				}
+				return;
+			}
+			function rotate(form) {
+				let temp;
+				for (let i = 0; i < limit; i++) {
+					eval("temp=form['z" + i + "'].value");
+					eval("form['z" + i + "'].value=form['y" + i + "'].value");
+					eval("form['y" + i + "'].value=form['x" + i + "'].value");
+					eval("form['x" + i + "'].value=temp");
+				}
+			}
+			function pop(form) {
+				for (let i = 0; i < limit; i++) {
+					eval("form['z" + i + "'].value=form['y" + i + "'].value");
+					eval("form['y" + i + "'].value=form['x" + i + "'].value");
+				}
+			}
+			function swap(form) {
+				let temp;
+				for (let i = 0; i < limit; i++) {
+					eval("temp=form['z" + i + "'].value");
+					eval("form['z" + i + "'].value=form['y" + i + "'].value");
+					eval("form['y" + i + "'].value=temp");
+				}
+			}
+			function dup(form) {
+				for (let i = 0; i < limit; i++) {
+					eval("form['x" + i + "'].value=form['y" + i + "'].value");
+					eval("form['y" + i + "'].value=form['z" + i + "'].value");
+				}
+			}
+			function enter(form) {
+				for (let i = 0; i < limit; i++) {
+					eval("form['x" + i + "'].value=form['y" + i + "'].value");
+					eval("form['y" + i + "'].value=form['z" + i + "'].value");
+					eval("form['z" + i + "'].value=0");
+				}
+			}
+			function drop(form) {
+				for (let i = 0; i < limit; i++) {
+					eval("form['z" + i + "'].value=0");
+				}
+			}
+			function randFill(form) {
+				let z = [];
+				let r = form.randMode.value;
+				if (r == 0) {
+					for (let i = 0; i < limit; i++) {
+						z[i] = Math.floor(19 * Math.random() - 9);
+						eval("form['z" + i + "'].value=z[i]");
+					}
+					return;
+				}
+				for (let i = 0; i < limit; i++) {
+					z[i] = 2 * Math.random() - 1;
+					eval("form['z" + i + "'].value=z[i]");
+				}
+				return;
+			}
+			function plus(form) {
+				let y = [];
+				let z = [];
+				let s = [];
+				for (let i = 0; i < limit; i++) {
+					eval("z[i]=form['z" + i + "'].value");
+					eval("y[i]=form['y" + i + "'].value");
+					s[i] = eval(y[i]) + eval(z[i]);
+					eval("form['z" + i + "'].value=s[i]");
+					eval("form['y" + i + "'].value=form['x" + i + "'].value");
+				}
+			}
+			function minus(form) {
+				for (let i = 0; i < limit; i++) {
+					eval("form['z" + i + "'].value=form['y" + i + "'].value - form['z" + i + "'].value");
+					eval("form['y" + i + "'].value=form['x" + i + "'].value");
+				}
+			}
+			function divide(form) {
+				let y = [];
+				let z = [];
+				let p = [];
+				let z2 = 0;
+				y[0] = eval(form.y0.value);
+				z[0] = eval(form.z0.value);
+				p[0] = 0;
+
+
+				for (let i = 1; i < limit; i++) {
+					eval("y[i]=form['y" + i + "'].value");
+					eval("z[i]=-form['z" + i + "'].value");
+					p[i] = 0;
+				}
+
+				for (i = 0; i < limit; i++) {
+					z2 += z[i] * z[i];
+					for (let j = 0; j < 8; j++) {
+						let k = 8*i + j;
+						p[ sub[k] ] += sgn[k] * y[i] * z[j];
+					}
+				}
+
+				for (i = 0; i < limit; i++) {
+					p[i] = p[i] / z2;
+					p[i] = (1e-15) * Math.round(1e15 * p[i]);
+
+					eval("form['y" + i + "'].value=form['x" + i + "'].value");
+					eval("form['z" + i + "'].value = p[i]");
+				}
+			}
+
+			function inverse(form) {
+				let zconj = [];
+				let z2 = 0;
+				zconj[0] = eval(form.z0.value);
+				for (let i = 1; i < limit; i++) {
+					eval("zconj[i]=-form['z" + i + "'].value");
+				}
+				for (i = 0; i < limit; i++) {
+					z2 += zconj[i] * zconj[i];
+				}
+				for (i = 0; i < limit; i++) {
+					zconj[i] = zconj[i] / z2;
+					eval("form['z" + i + "'].value=zconj[i]");
+				}
+			}
+
+			function multiply(form) {//Put Register 1 in y[], Top Register in z[].
+				let p = [];//Will contain octonion product of y & z.
+				let y = [];
+				let z = [];
+
+				for (let i = 0; i < limit; i++) {
+					eval("y[i]=form['y" + i + "'].value");
+					eval("z[i]=form['z" + i + "'].value");
+					p[i] = 0;
+				}
+				for (let i = 0; i < limit; i++) {//Increment value of the component p
+					for (let j = 0; j < 8; j++) {//whose index is in row i column j
+						let k = i * 8 + j;       //of sub[].
+						p[ sub[k] ] += sgn[k] * y[i] * z[j];
+					}
+				}
+				for (i = 0; i < limit; i++) {
+					//Move Register 2 into Register 1.
+					eval("form['y" + i + "'].value=form['x" + i + "'].value");
+					//Move product into Top Register
+					eval("form['z" + i + "'].value=p[i]");
+				}
+			}
+
+			function conjugate(form) {//Compute conjugate of Top Register and
+				//place the result in the Top Register
+				for (let i = 1; i < limit; i++) {
+					eval("form['z" + i + "'].value=-form['z" + i + "'].value");
+				}
+			}
+			function norm(form) {//Compute the Euclidean magnitude of vector in
+				//Top Register and place the result in the Top Register.
+				let z = [];
+				let Szz = 0;
+				for (let i = 0; i < limit; i++) {
+					eval("z[i]=form['z" + i + "'].value");
+					Szz += z[i] * z[i];
+					eval("form['z" + i + "'].value=0");
+				}
+				form.z0.value = Math.sqrt(Szz);
+				return;
+			}
+			function unitize(form) {//Normalize the vector in Top Register.
+				let z = [];
+				let Szz = 0;
+				for (let i = 0; i < limit; i++) {
+					eval("z[i] = form['z" + i + "'].value");
+					Szz += z[i] * z[i];
+				}
+				let normX = Math.sqrt(Szz);
+				for (let i = 0; i < limit; i++) {
+					let temp = z[i] / normX;
+					eval("form['z" + i + "'].value = temp");
+				}
+				return;
+			}
+			function bitValue(number, bit) {//Return the bitvalue of an integer
+				let result = (number & (1 << bit)) >>> bit;
+				return result;
+			}
+
+		    function commutate(form){//With array X in Register 1 and array Y in Top Register
+	        //compute XY - YX and put result in Top Register.
+		        let X = [];
+		        let Y = [];
+		        let AB = [];
+		        let BA = [];
+		        for (let i = 0; i < limit; i++){
+	                X[i] = document.getElementById( "y" + i ).value;//Get X from Reg 1
+	                Y[i] = document.getElementById( "z" + i ).value;//Get Y from Top Reg
+		        }
+		        AB = multArray(X,Y);//Place product of arrays X,Y in array AB
+		        BA = multArray(Y,X);//Place product of arrays Y,X in array BA
+
+		        let AC = [];
+		        for (let i = 0; i < limit; i++){
+	                AC[i] = AB[i].toPrecision(16) - BA[i].toPrecision(16);
+		        }
+
+		        for ( k = 0; k < 8; k++){
+	                eval("form['y" + k + "'].value=0");//Place zeros in Register 1
+	                eval("form['z" + k + "'].value = AC[k]");//Place elements of AC in top register
+		        }
+			}
+
+	        function multArray(x,y) {
+                const returnArray = new Array(8);//Define array for return values
+                returnArray.fill(0);//Fill the return array with zeros
+
+		        for (let i = 0; i < limit; i++) {
+	                for (let j = 0; j < 8; j++) {
+                        let k = i * 8 + j;
+                        returnArray[ sub[k] ] += sgn[k] * x[i] * y[j];
+                        //For 0 < k < 64, sub[k] returns a value n, 0 < n < 8 resulting
+                        //in returnArray containing the octonion product of x and y
+	                }
+		        }
+		        return returnArray;
+	        }
+
+
+			function SinCosX(form) {//Compute limits of series needed for Exp(X).
+				let A = [];
+				let B = [];
+				let SumA = [];
+				let SumB = [];
+				let Aspread = 0;
+				let Bspread = 0;
+				let Z0 = eval(form.z0.value);
+				A[2] = Z0;
+				SumA[2] = A[2] + 1;
+				let z = [];
+				let Szz = 0;
+				for (let i = 0; i < limit; i++) {
+					eval("z[i]=form['z" + i + "'].value");
+					Szz += z[i] * z[i];
+				}
+				B[2] = -Szz / 2;
+				SumB[2] = B[2] + 1;
+				for (let i = 3; i < 1000; i++) {
+					A[i] = 0;
+					B[i] = 0;
+					SumA[i] = 0;
+					SumB[i] = 0;
+				}
+				for (let i = 3; i < 1000; i++) {
+					A[i] = (A[i - 1] * Z0 * 2 + B[i - 1]) / i;
+					B[i] = -A[i - 1] * Szz / i;
+					SumA[i] += SumA[i - 1] + A[i];
+					SumB[i] = SumB[i - 1] + B[i];
+					if (A[i] != 0 && B[i] != 0 && SumA[i] != 0 && SumB[i] != 0) {
+						Aspread = Math.log(Math.abs(SumA[i])) - Math.log(Math.abs(A[i]));
+						Bspread = Math.log(Math.abs(SumB[i])) - Math.log(Math.abs(B[i]));
+					}
+					var N = i;
+					if (Aspread >= 39 && Bspread >= 39) break;
+				}
+				CosX = SumB[N];
+				SinX = SumA[N];
+			}
+
+			function expX(form) {//Compute EXP(X)
+				SinCosX(form);
+				form.z0.value = SinX * eval(form.z0.value) + CosX;
+				for (let i = 1; i < limit; i++) {
+					eval("form['z" + i + "'].value=SinX*form['z" + i + "'].value");
+				}
+			}
+		</script>
+
+ 
+    <div class="dropdown">
+		<span><h2>Additional information about the calculator (mouseover)</h2>
+		</span>
+		<div class="dropdown-content">
+			<hr/>
+			<p>This is a 'Reverse Polish octonion calculator' with a level three pushdown stack. The top of the stack is the rightmost column.</p>
+			<p> The traditional 'PUSH' operation is here rendered as 'ENTER'</p>
+			<p>Octonions may be entered by hand in the top register or you may generate random entries and store them for reuse.
+			</p>
+			<p>To perform an operation such as x + y you would do x enter y plus and the result will appear in the top
+				register.</p>
+			<p>An example of a more complex calculation is given below the calculator.</p>
+			<p>There are sixteen memory registers X,Y,Z plus A through M accessible from a dropdown list.</p>
+			<p>There are 480 different octonion triad sets which specify the product of the seven octonion basis vectors.</p>
+			<p>You may replace the seven default triads with your preferred set of triads, but must re-initialize the calculator after doing so.</p>
+
+			<p>Feel free to email me with questions or comments using my email at the bottom of the calculator page.</p>
+			<p>If you find a bug, please send me a bug report with instructions on how to reproduce the error.</p>
+		    <p>The default triads in the top row are based on Degan's Eight Square Identity.</p>
+		    <p>You may change the default triads to any of the other 480 Octonion triads but you must re-initialize the calculator after doing so.</p>
+		    <p>You may select the value of the 'center' position in the Fano plane by changing the value of C from the drop down list.</p>
+		    <hr/>
+		</div>
+	</div>
+
+<p></p>
+
+<div class="dropdown">
+	<span><h2>A worked example of use (mouseover)</h2>
+	</span>
+	<div class="dropdown-content">
+	<p>To illustrate one of the Moufang identities using randomly generated entries, for example
+		Z(X(ZY))&nbsp;=&nbsp;((ZX)Z)Y, perform the following operations:
+	<ol>
+		<li> Select random vectors X, Y and Z </li>
+		<ol>
+			<li> INPUT X STO </li>
+			<li> INPUT Y STO </li>
+			<li> INPUT Z STO </li>
+		</ol>
+		<li> Perform the operations on the left side of the identity </li>
+		<ol>
+			<li> Z RCL ENTER (Since Z should already be in the register, you don't actually have to recall it.)</li>
+			<li> Y RCL &times; ENTER </li>
+			<li> X RCL SWAP &times; ENTER </li>
+			<li> Z RCL SWAP &times; </li>
+		</ol>
+		<li> Store the result </li>
+		<ol>
+			<li> A STO </li>
+		</ol>
+		<li> Perform the operations on the right side of the identity </li>
+		<ol>
+			<li> Z RCL ENTER </li>
+			<li> X RCL &times; ENTER </li>
+			<li> Z RCL &times; ENTER </li>
+			<li> Y RCL &times; ENTER </li>
+		</ol>
+		<li> Subtract the result obtained on the left side of the identity. Result should be 0 (allowing for tiny round off errors
+			of order 10<sup>-14</sup>). </li>
+		<ol>
+			<li> A RCL &ndash; </li>
+		</ol>
+	</ol>
+
+	</div>
+</div>
+
+<p></p>
+
+<div class="dropdown">
+	<span><h2>Copyright notice (mouseover)</h2></span>
+		<div class="dropdown-content">
+			<p>Copyright (C) 2009, 2023  John Wayland Bales john.w.bales@gmail.com</p>
+
+		    <p>This program is free software: you can redistribute it and/or modify
+		    it under the terms of the GNU General Public License as published by
+		    the Free Software Foundation, either version 3 of the License, or
+		    (at your option) any later version.</p>
+
+		    <p>This program is distributed in the hope that it will be useful,
+		    but WITHOUT ANY WARRANTY; without even the implied warranty of
+		    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+		    GNU General Public License for more details.</p>
+
+		    <p>You should have received a copy of the GNU General Public License
+		    along with this program.  If not, see <a href="https://www.gnu.org/licenses">www.gnu.org</a>. </p> 
+		    </p>
+	 	<p>You may use or modify this software for any non-commercial use so long as you include this copyright notice.
+		</p>
+	          
+		</div>
+	</div>
+
+	<p>Also check out the <a href="https://jwbales.us/rpnSedenion.html">Sedenion calculator.</a></p>
+</body>
+
+</html>
+
+
